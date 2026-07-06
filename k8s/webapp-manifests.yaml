@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: rails-app
-          image: ror-webapp:latest
+          image: image: mredict/kubernetes-task2:latest
           ports:
             - containerPort: 3000
           env:
