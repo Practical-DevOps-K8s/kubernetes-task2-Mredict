@@ -14,22 +14,18 @@ spec:
       labels:
         app: webapp
     spec:
-      # 1. This prevents the Rails app from starting (and crashing) 
-      # until Postgres is 100% ready to accept connections.
-      initContainers:
-        - name: wait-for-db
-          image: postgres:alpine
-          command:
-            - sh
-            - "-c"
-            - "until pg_isready -h db-service -p 5432 -U app_user; do echo 'Waiting for database...'; sleep 2; done;"
       containers:
         - name: webapp
           image: ghcr.io/practical-devops/k8/web-app:latest
-          # 2. Overrides the Dockerfile CMD to ensure it binds to 0.0.0.0
-          args: ["./bin/rails", "server", "-b", "0.0.0.0"]
           ports:
             - containerPort: 3000
+          # ADD THIS: Forces Kubernetes to wait for a 200 OK before proceeding
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 2
           env:
             - name: RAILS_MASTER_KEY
               valueFrom:
