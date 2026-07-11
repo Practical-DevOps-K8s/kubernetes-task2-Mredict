@@ -1,7 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: webapp-deployment
+  name: webapp
+  labels:
+    app: webapp
 spec:
   replicas: 1
   selector:
@@ -14,17 +16,49 @@ spec:
     spec:
       containers:
         - name: webapp
-          # Update this image name to match what your CI/CD builds
-          image: my-ror-app:latest 
-          imagePullPolicy: IfNotPresent
+          # Build this image from the Dockerfile at the repo root and push it
+          # to a registry your cluster can pull from, then update this value,
+          # e.g. docker.io/<your-username>/webapp:latest
+          image: YOUR_DOCKERHUB_USERNAME/webapp:latest
           ports:
             - containerPort: 3000
           env:
             - name: DATABASE_HOST
               value: postgres-service
-            - name: DATABASE_USER
-              value: myuser
-            - name: DATABASE_PASSWORD
-              value: secretpassword
+            - name: DATABASE_PORT
+              value: "5432"
             - name: DATABASE_NAME
-              value: webapp_db
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_DB
+            - name: DATABASE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_USER
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+            - name: RAILS_ENV
+              value: production
+            - name: RAILS_SERVE_STATIC_FILES
+              value: "true"
+            - name: RAILS_LOG_TO_STDOUT
+              value: "true"
+            - name: SECRET_KEY_BASE
+              value: "insecure_default_secret_key_base_for_ci_0000000000000000000000000000000000000000000000000000000000"
+          readinessProbe:
+            httpGet:
+              path: /up
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /up
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 10
