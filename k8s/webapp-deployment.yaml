@@ -31,4 +31,4 @@ spec:
                   name: db-pass
                   key: password
             - name: DATABASE_URL
-              value: postgres://app_user:$(POSTGRES_PASSWORD)@db-service/app_db
+              value: postgresql://app_user:$(POSTGRES_PASSWORD)@db-service:5432/app_db
