@@ -19,7 +19,7 @@ spec:
           # Build this image from the Dockerfile at the repo root and push it
           # to a registry your cluster can pull from, then update this value,
           # e.g. docker.io/<your-username>/webapp:latest
-          image: YOUR_DOCKERHUB_USERNAME/webapp:latest
+          image: mrredict/webapp:latest
           ports:
             - containerPort: 3000
           env:
